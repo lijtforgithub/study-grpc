@@ -35,6 +35,9 @@ public class RouteGuideServiceImpl extends RouteGuideServiceGrpc.RouteGuideServi
         responseObserver.onCompleted();
     }
 
+    /**
+     * 服务器端流式
+     */
     @Override
     public void listFeatures(RouteGuideProto.Rectangle request, StreamObserver<RouteGuideProto.Feature> responseObserver) {
         int left = min(request.getLo().getLongitude(), request.getHi().getLongitude());
@@ -56,6 +59,9 @@ public class RouteGuideServiceImpl extends RouteGuideServiceGrpc.RouteGuideServi
         responseObserver.onCompleted();
     }
 
+    /**
+     * 客户端流式
+     */
     @Override
     public StreamObserver<RouteGuideProto.Point> recordRoute(final StreamObserver<RouteGuideProto.RouteSummary> responseObserver) {
         return new StreamObserver<RouteGuideProto.Point>() {
@@ -87,7 +93,8 @@ public class RouteGuideServiceImpl extends RouteGuideServiceGrpc.RouteGuideServi
             @Override
             public void onCompleted() {
                 long seconds = NANOSECONDS.toSeconds(System.nanoTime() - startTime);
-                responseObserver.onNext(RouteGuideProto.RouteSummary.newBuilder().setPointCount(pointCount)
+                responseObserver.onNext(RouteGuideProto.RouteSummary.newBuilder()
+                        .setPointCount(pointCount)
                         .setFeatureCount(featureCount).setDistance(distance)
                         .setElapsedTime((int) seconds).build());
                 responseObserver.onCompleted();
@@ -95,6 +102,9 @@ public class RouteGuideServiceImpl extends RouteGuideServiceGrpc.RouteGuideServi
         };
     }
 
+    /**
+     * 双向流式
+     */
     @Override
     public StreamObserver<RouteGuideProto.RouteNote> routeChat(final StreamObserver<RouteGuideProto.RouteNote> responseObserver) {
         return new StreamObserver<RouteGuideProto.RouteNote>() {
@@ -150,8 +160,7 @@ public class RouteGuideServiceImpl extends RouteGuideServiceGrpc.RouteGuideServi
         double deltaLat = lat2 - lat1;
         double deltaLon = lon2 - lon1;
 
-        double a = sin(deltaLat / 2) * sin(deltaLat / 2)
-                + cos(lat1) * cos(lat2) * sin(deltaLon / 2) * sin(deltaLon / 2);
+        double a = sin(deltaLat / 2) * sin(deltaLat / 2) + cos(lat1) * cos(lat2) * sin(deltaLon / 2) * sin(deltaLon / 2);
         double c = 2 * atan2(sqrt(a), sqrt(1 - a));
 
         return (int) (r * c);
